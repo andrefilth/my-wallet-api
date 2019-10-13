@@ -1,0 +1,20 @@
+package com.amedigital.wallet.service.atom.response.enums;
+
+public enum AcquirerTransactionStatus {
+    CREATED,
+    AUTHORIZED,
+    NOT_AUTHORIZED,
+    ACQUIRER_UNAVAILABLE_ERROR,
+    CAPTURED,
+    NOT_CAPTURED,
+    CANCELLED,
+    NOT_CANCELLED,
+    ERROR,
+    UNEXPECTED_ERROR,
+    REFUNDED,
+    REFUND_AUTHENTICATION_ERROR,
+    REFUND_PENDING,
+    REFUND_PROCESSING_ERROR,
+    REFUND_DUPLICATED_ERROR,
+    REFUND_TIMEOUT_ERROR
+}

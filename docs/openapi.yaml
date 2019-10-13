@@ -1,0 +1,1133 @@
+openapi: "3.0.0"
+info:
+  title: AME Wallet API
+  description: |
+    A API AME Wallet representa uma carteira virtual, com ela você gerenciará seus recursos financeiros relizar azer compras, transaferências entre outras operações.
+  version: "2.0.0"
+
+
+paths:
+  /info:
+    get:
+      summary: Retorna informações da carteira
+      description: Retornar as informações relacionadas a carteira principal do owner. A carteira e o owner são identificados apartir do header ```Authorization```.
+      operationId: getInfo
+      security:
+      - OAuth2: [read]
+      tags:
+      - Gerenciamento de Carteiras
+      responses:
+        '200':
+          description: Informações encontradas com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletResponse'
+        '404':
+          description: Informações não encontradas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Falha na autenticação. Autenticação negada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Falha na autorização. Você não possui permissão para realizar esta operação.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '405':
+          description: 'Método HTTP ou Content-Type não suportado'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Erro interno no servidor"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+      - Gerenciamento de Carteiras
+      operationId: putInfo
+      security:
+      - OAuth2: [write]
+      summary: Atualiza informações da carteira
+      description: Após uma carteira ser criada é possível alterar os dados cadastradas, desde de que as mudanças respeitam as mesmas regras da criação.
+      parameters:
+      - in: path
+        name: walletId
+        required: true
+        schema:
+          type: string
+
+      requestBody:
+        description: "Modelo de requisição utilizado para criar/atualizar uma carteira"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletRequest'
+      responses:
+        '200':
+          description: Carteira atualizada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletResponse'
+        '400':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Falha na autenticação. Autenticação negada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Falha na autorização. Você não possui permissão para realizar esta operação.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '405':
+          description: 'Método HTTP ou Content-Type não suportado'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Erro interno no servidor"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /creditcards:
+    description: "A wallet pertmite você armazenar os dados de seu cartão com sua referência de um cofre seguro, para ser utilizado em futuras transações, as APIs abaixo: correspondes as ações para gerenciar seus cartões cadastrados."
+    get:
+      tags:
+      - Credit Cards
+      operationId: getCreditCards
+      summary: Lista cartões
+      description: Lista todos os cartões vinculados a wallet do usuário.
+      security:
+      - OAuth2: [write]
+      responses:
+        '200':
+          description: Cartões retornados com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CreditCard'
+        '403':
+          description: Ocorreu um erro de validação dos dados inseridos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '204':
+          description: Não existem cartões cadastrados.
+    post:
+      tags:
+      - Credit Cards
+      operationId: postCreditCards
+      security:
+      - OAuth2: [write]
+      summary: Cadastra cartão.
+      description: Cadastra um novo cartão de crédito na wallet da sessão.
+      requestBody:
+        description: "Modelo de cartão de crédito"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditCard'
+      responses:
+        '201':
+          description: Cartão criado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditCard'
+        '400':
+          description: Ocorreu um erro de validação dos dados inseridos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Ocorreu um erro de validação dos dados inseridos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '405':
+          description: O método http não é suportado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Erro interno no servidor"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  '/creditcards/{id}':
+    put:
+      tags:
+      - Credit Cards
+      operationId: putCreditCards
+      security:
+      - OAuth2: [write]
+      summary: Atualiza cartão de crédito
+      description: Atualiza os dados de um cartão de crédito jå cadastrado.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+        description: Id do cartão de crédito.
+      requestBody:
+        description: "Modelo de cartão de crédito"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditCard'
+      responses:
+        '200':
+          description: Cartão criado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditCard'
+        '400':
+          description: Ocorreu um erro de validação dos dados inseridos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Ocorreu um erro de validação dos dados inseridos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '405':
+          description: O método http não é suportado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Erro interno no servidor"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /wallets:
+    description: "A `wallet` é o principal objeto da API, com ela você será capaz de gerenciar todos os seus recursos financeiros assim como realizar diversar operações, tais como: compras, transferéncia, recarrargas receber cashbacks."
+    post:
+      tags:
+      - Gerenciamento de Carteiras
+      operationId: postWallets
+      security:
+      - OAuth2: [write]
+      summary: Cria Carteira
+      description: Cria uma nova carteira associada a um `onwer`. O `Owner` representa o dono/responsável pela carteira. Através da carteira virtual será possível utilizar todos os recursos da AME Wallet API. O Owner será criado juntamente com a sua respectiva carteira. Caso o owner já exista será lançada uma exceção, o sistema identifica owner apartir do número de documento cadastrado logo não podem existir dois iguais.
+      requestBody:
+        description: "Modelo de requisição utilizado para criar uma nova carteira"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletRequest'
+      responses:
+        '201':
+          description: Carteira criada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletResponse'
+        '400':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Falha na autenticação. Autenticação negada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Falha na autorização. Você não possui permissão para realizar esta operação.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '405':
+          description: 'Método HTTP ou Content-Type não suportado'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Erro interno no servidor"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /orders:
+    post:
+      tags:
+      - Ordens
+      operationId: postOrder
+      security:
+      - OAuth2: [write]
+      summary: Pré Autoriza uma Ordem
+      description: As ordens são eventos que a carteira sabe interpretar para realizar uma determinada ação. Cada ordem no sistema possui uma finalidade como realizar uma transferência, depositar saldo na carteira, efetuar uma compra entre varias operações. Cada ordem possuí um tipo, a qual o carteira interpreta para saber executar as devidas ações.
+      requestBody:
+        description: "Modelo de requisição utilizado para criar/atualizar uma carteira"
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - $ref: '#/components/schemas/CashOrderRequest'
+              - $ref: '#/components/schemas/TransferBetweenWalletsOrderRequest'
+              - $ref: '#/components/schemas/PurchaseOrderRequest'
+              discriminator:
+                propertyName: type
+      responses:
+        '200':
+          description: Carteira atualizada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+    get:
+      tags:
+      - Ordens
+      operationId: getOrder
+      security:
+      - OAuth2: [read]
+      summary: Lista ordens
+      description: Busca todas as ordens que a wallet está envolvida, ou seja, criadas por ela mesma ou que ela faça parte.
+      responses:
+        '200':
+          description: "Ordens retornadas com sucesso."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        '204':
+          description: "Não foi encontrada nenhuma ordem."
+        '401':
+          description: "Falha na autenticação. Autenticação negada."
+        '403':
+          description: Falha na autorização. Você não possui permissão para realizar esta operação.
+  '/orders/{orderId}/refunds/{refundId}':
+    put:
+      tags:
+      - Ordens
+      security:
+      - OAuth2: [write]
+      summary: Realiza o estorno de uma ordem.
+      description: Realiza o estorno referente a uma ordem já realizada.
+      parameters:
+      - in: path
+        name: orderId
+        schema:
+          type: string
+        required: true
+        description: Id da ordem que deseja realizar o estorno.
+      - in: path
+        name: refundId
+        schema:
+          type: string
+        required: true
+        description: ID do estorno.
+      requestBody:
+        description: "Modelo de requisição de uma ordem de estorno"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundOrderRequest'
+      responses:
+        '200':
+          description: "Ordens retornadas com sucesso."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+
+
+  '/orders/{orderId}/release':
+    post:
+      tags:
+      - Ordens
+      operationId: postOrderRelease
+      security:
+      - OAuth2: [write]
+      summary: Pré Autoriza uma liquidação de uma ordem
+      description: Realiza a liquidacão de uma ordem.
+      parameters:
+      - in: path
+        name: orderId
+        schema:
+          type: string
+        required: true
+        description: Id da ordem que deseja realizar a aliquidação
+      requestBody:
+        description: "Modelo de quisição de uma ordem de liquidação"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReleaseOrderRequest'
+      responses:
+        '201':
+          description: Liquidação executada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseOrderResponse'
+
+
+
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      - error_description
+      properties:
+        error:
+          description: Classificação do erro
+          type: string
+          example: wallet_validation
+        error_description:
+          description: Descrião do erro
+          type: string
+          example: Já existe uma carteira cadastrada a um owner com este documento.
+        error_id:
+          description: Identificador do erro
+          type: string
+          example: "WALLET_0001"
+
+
+    BalanceResponse:
+      type: object
+      required:
+      - available
+      - futureCredit
+      - futureDebit
+      properties:
+        available:
+          type: integer
+          format: int64
+          description: "Saldo disponível para consumo. O valor é representado em centavos, por exemplo 59539 é equivalente á R$ 595,39"
+          example: 59539
+        futureCredit:
+          type: integer
+          format: int64
+          description: "Saldo que será creditado em uma data futura. O valor é representado em centavos, por exemplo 59539 é equivalente á R$ 595,39"
+          example: 59539
+        futureDebit:
+          type: integer
+          format: int64
+          description: "Saldo que será debitado em uma data futura. O valor é representado em centavos, por exemplo 59539 é equivalente á R$ 595,39"
+          example: 59539
+
+
+    OwnerRequest:
+      type: object
+      required:
+      - name
+      - email
+      - document
+      - documentType
+      - externalId
+      properties:
+        name:
+          type: string
+          description: Nome do `owner`
+          example: Frederico da Silva
+        externalId:
+          type: string
+          description: Id do owner no sistema de origem externo. Utilizado para armazenar um id externo no caso de uma itegração.
+          example: "1HYgb3443X"
+        email:
+          type: string
+          description: Email do `onwer` no momento do registro.
+          example: 'frederico.silva@amedigical.com'
+        document:
+          type: string
+          description: O valor do documento cadastrado no momento do registro do `onwer`
+          example: '999-999-999-99'
+        documentType:
+          type: string
+          description: É a constante representa qual o tipo de documento que está associado ao `onwer`.
+          enum:
+          - CPF
+          - CNPJ
+
+    WalletRequest:
+      type: object
+      required:
+      - name
+      - type
+      - owner
+      properties:
+        name:
+          type: string
+          description: Nome da wallet
+          example: Carteira Principal
+        type:
+          type: string
+          description: Tipo da carteira, pode possuir os seguintes valores ```CUSTOMER``` ou ```MERCHANT```. Os tipos de carteira definem um conjunto de operação e limites associados.
+          enum:
+          - CUSTOMER
+          - MERCHANT
+          example: CUSTOMER
+        main:
+          type: boolean
+          description: Indica se a carteira criada será a carteira principal do owner. Caso owner ainda não exista obrigatóriamente a cartiera será considerada como principal. Um owner não pode possuir duas carteiras principais.
+          default: true
+          example: true
+        owner:
+          $ref: '#/components/schemas/OwnerRequest'
+
+    OwnerResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identificador único do `owner`.
+          example: 'f030bca2-bff3-4531-a8c0-a33f676022d6'
+          readOnly: true
+        externalId:
+          type: string
+          description: Id do owner no sistema de origem externo. Utilizado para armazenar um id externo no caso de uma itegração.
+          example: "1HYgb3443X"
+        name:
+          type: string
+          description: Nome do `owner`
+          example: Frederico da Silva
+        email:
+          type: string
+          description: Email do `onwer` no momento do registro.
+          example: 'frederico.silva@amedigical.com'
+        document:
+          type: string
+          description: O valor do documento cadastrado no momento do registro do `onwer`
+          example: '999-999-999-99'
+        documentType:
+          type: string
+          description: É a constante representa qual o tipo de documento que está associado ao `onwer`.
+          enum:
+          - CPF
+          - CNPJ
+        createdAt:
+          type: string
+          format: date-time
+          description: Data e hora da criação da owner no padrão `yyyy-MM-ddTHH:mm:ss Z`
+          example: '2018-08-17T13:22:41.SSS -03:00'
+        updatedAt:
+          type: string
+          format: date-time
+          description: Data e hora da última atualização da owner no padrão `yyyy-MM-ddTHH:mm:ss Z`
+          example: '2018-08-27T13:22:41.SSS -03:00'
+
+    WalletResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: '632c4f16-51b7-46a0-9377-89dcfc307bf1'
+          description: Identificador único da `wallet`
+          readOnly: true
+        type:
+          type: string
+          enum:
+          - CUSTOMER
+          - MERCHANT
+          example: CUSTOMER
+        name:
+          type: string
+          description: Carteira de Investimentos.
+        main:
+          type: boolean
+          description: Entre as varias carteiras que um `owner` pode possuir, indica qual é a principal.
+          example: true
+        active:
+          type: boolean
+          description: Inidica se a carteira está ativa para utilização.
+        createdAt:
+          type: string
+          format: date-time
+          description: Data e hora da criação da carteira no padrão `yyyy-MM-ddTHH:mm:ss Z`
+          example: '2018-08-17T13:22:41.SSS -03:00'
+        updatedAt:
+          type: string
+          format: date-time
+          description: Data e hora da última atualização da carteira no padrão `yyyy-MM-ddTHH:mm:ss Z`
+          example: '2018-08-27T13:22:41.SSS -03:00'
+        owner:
+          $ref: '#/components/schemas/OwnerResponse'
+        balance:
+          $ref: '#/components/schemas/BalanceResponse'
+
+    PaymentMethodRequest:
+      type: object
+      required:
+      - type
+      - amountInCents
+      properties:
+        type:
+          type: string
+          description: Determina o tipo de meio de pagamento utilizado para executar uma ordem.
+          example: CREDITCARD
+          enum:
+          - CREDITCARD
+          - AME_CASH
+        amountInCents:
+          type: integer
+          format: int64
+          minimum: 1
+          example: Valor que será cobrado no meio de pagamento especifico com o objetivo de executar a ordem. O valor é especificando em centavos e deve ser maior que zero.
+    CreditCardMethodRequest:
+      allOf:
+      - $ref: '#/components/schemas/PaymentMethodRequest'
+      - type: object
+        required:
+        - cardId
+        properties:
+          type:
+            type: string
+            example: CREDITCARD
+            enum: [CREDITCARD]
+          cardId:
+            type: string
+            format: uuid
+            description: "Id do cartão de crédito que será utilizado para processar executar a transação"
+            example: "0f69f510-22ba-466e-83e7-3981e410931d"
+          cvv:
+            type: string
+            description: Código do cvv utilizado para executar a transação.
+            example: "031"
+          numberOfInstallments:
+            type: integer
+            format: int32
+            description: "Número de parcelas que será divido o valor da transação referente ao cartão de crédito. Este valor deve ser maior que 0 (zero), porém se não for informado o valor default é 1"
+            default: 1
+
+    CashMethodRequest:
+      allOf:
+      - $ref: '#/components/schemas/PaymentMethodRequest'
+      - type: object
+        properties:
+          type:
+            type: string
+            example: AME_CASH
+            enum: [AME_CASH]
+
+
+    OrderRequest:
+      type: object
+      required:
+      - type
+      - title
+      - amountInCents
+      - paymentMethods
+      properties:
+        type:
+          type: string
+          example: PURCHASE
+          enum:
+          - CASH_IN
+          - TRANSFER_BETWEEN_WALLETS
+          - PURCHASE
+        title:
+          type: string
+          example: 'Deposito com cartão de crédito'
+          description: Título da ordem
+        description:
+          type: string
+          example: 'Deposito realizado para comprar utilizando saldo da carteira.'
+          description: 'Descrição da ordem'
+        amountInCents:
+          type: integer
+          format: int64
+          example: 157990
+          minimum: 1
+          description: Valor total da ordem em centavos, onde o `amount` deve ser maior que zero.
+        transactions:
+          $ref: '#/components/schemas/PaymentMethodRequest'
+        customPayload:
+          type: string
+          description: 'Objeto json generico para persistir dados do aplicação cliente.'
+        createdAt:
+          type: string
+          format: date-time
+          description: Data e hora da criação da ordem no padrão `yyyy-MM-ddTHH:mm:ss Z`
+          example: '2018-08-17T13:22:41.SSS -03:00'
+        updatedAt:
+          type: string
+          format: date-time
+          description: Data e hora da última da ordem no padrão `yyyy-MM-ddTHH:mm:ss Z`
+          example: '2018-08-27T13:22:41.SSS -03:00'
+
+    CashOrderRequest:
+      allOf:
+      - $ref: '#/components/schemas/OrderRequest'
+      - type: object
+        properties:
+          type:
+            type: string
+            example: PURCHASE
+            enum: [CASH_IN]
+          paymentMethods:
+            type: array
+            items:
+              oneOf:
+              - $ref: '#/components/schemas/CreditCardMethodRequest'
+              discriminator:
+                propertyName: type
+
+    TransferBetweenWalletsOrderRequest:
+      allOf:
+      - $ref: '#/components/schemas/OrderRequest'
+      - type: object
+        properties:
+          type:
+            type: string
+            example: PURCHASE
+            enum: [TRANSFER_BETWEEN_WALLETS]
+          paymentMethods:
+            type: array
+            items:
+              oneOf:
+              - $ref: '#/components/schemas/CreditCardMethodRequest'
+              - $ref: '#/components/schemas/CashMethodRequest'
+              discriminator:
+                propertyName: type
+
+    PurchaseOrderRequest:
+      allOf:
+      - $ref: '#/components/schemas/OrderRequest'
+      - type: object
+        properties:
+          type:
+            type: string
+            example: PURCHASE
+            enum: [PURCHASE]
+          paymentMethods:
+            type: array
+            items:
+              oneOf:
+              - $ref: '#/components/schemas/CreditCardMethodRequest'
+              - $ref: '#/components/schemas/CashMethodRequest'
+              discriminator:
+                propertyName: type
+
+    RefundOrderRequest:
+      allOf:
+      - $ref: '#/components/schemas/OrderRequest'
+      - type: object
+        properties:
+          type:
+            type: string
+            example: REFUND
+            enum: [REFUND]
+
+
+
+    ReleaseOrderRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          example: RELEASE
+          default: RELEASE
+        takeRate:
+          type: number
+          format: float
+          example: 1.5
+          description: Representa a taxa cobrada pela liquidação da ordem.
+          default: 0.0
+        releaseTime:
+          type: integer
+          example: 30
+          description: Quantidade de um determinado perioro até a data de liquidação.
+        releaseTimeUnit:
+          type: string
+          enum:
+          - MONTH
+          - DAY
+          - YEAR
+          default: DAY
+          description: Determina qual a unidade de tempo utilizada para cálcular a data de liquidação junto com o `releaseTime`.
+
+    ReleaseOrderResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identificador único da ordem de liquidação
+        type:
+          type: string
+          example: RELEASE
+          default: RELEASE
+        status:
+          type: string
+          enum:
+          - AUTHORIZED
+          - RELEASED
+        takeRate:
+          type: number
+          format: float
+          example: 1.5
+          description: Representa a taxa cobrada pela liquidação da ordem.
+          default: 0.0
+        releaseTime:
+          type: integer
+          example: 30
+          description: Quantidade de um determinado perioro até a data de liquidação.
+        releaseTimeUnit:
+          type: string
+          enum:
+          - MONTH
+          - DAY
+          - YEAR
+          default: DAY
+          description: Determina qual a unidade de tempo utilizada para cálcular a data de liquidação junto com o `releaseTime`.
+        action:
+          type: string
+          description: "Representa a ação realizada que resultou no status atual da transação"
+          enum:
+          - AUTHORIZE
+          - RELEASE
+        createdAt:
+          type: string
+          format: date-time
+          description: Data e hora da criação da ordem no padrão `yyyy-MM-ddTHH:mm:ss Z`
+          example: '2018-08-17T13:22:41.SSS -03:00'
+        updatedAt:
+          type: string
+          format: date-time
+          description: Data e hora da última da ordem no padrão `yyyy-MM-ddTHH:mm:ss Z`
+          example: '2018-08-27T13:22:41.SSS -03:00'
+        transactions:
+          type: array
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/CreditcardTransactionResponse'
+            - $ref: '#/components/schemas/AmeCashTransactionResponse'
+            discriminator:
+              propertyName: type
+
+    TransactionResponse:
+      type: object
+      required:
+      - id
+      - type
+      - paymentMethod
+      - amountInCents
+      - status
+      - action
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "658d6cd2-d0c7-4f39-b98e-9b3180ba3439"
+          description: Identificador único da transação
+        type:
+          type: string
+          description: Determina qual o tipo da transação, `DEBIT` ou `CREDIT`.
+          example: DEBIT
+          enum:
+          - DEBIT
+          - CREDIT
+        paymentMethod:
+          description: Determina o tipo de meio de pagamento utilizado para executar a transação.
+          example: CREDITCARD
+          enum:
+          - CREDITCARD
+          - AME_CASH
+        amountInCents:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Valor que será cobrado no meio de pagamento especifico com o objetivo de executar a ordem. O valor é especificando em centavos e deve ser maior que zero.
+          example: 74836
+        status:
+          type: string
+          example: SUCCESS
+          description: Indica o status da transação.
+          enum:
+          - CREATED
+          - SUCCESS
+          - DENID
+          - ERROR
+          - PENDING
+        action:
+          type: string
+          description: "Representa a ação realizada que resultou no status atual da transação"
+          enum:
+          - CREATE
+          - AUTHORIZE
+          - CAPTURE
+          - CANCEL
+          - RELEASE
+        takeRate:
+          type: number
+          format: float
+          description: Taxa cobrada para sobre o valor da transação no momento da liquidação.
+          example: 1.5
+        peerWalletId:
+          type: string
+          description: Wallet de referência da transação.
+          format: uuid
+        peerTransactionId:
+          type: string
+          description: id da transação que deu origem a está trasação.
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+          description: Data e hora da criação da transação no padrão `yyyy-MM-ddTHH:mm:ss Z`
+          example: '2018-08-17T13:22:41.SSS -03:00'
+        updatedAt:
+          type: string
+          format: date-time
+          description: Data e hora da última da transação no padrão `yyyy-MM-ddTHH:mm:ss Z`
+          example: '2018-08-27T13:22:41.SSS -03:00'
+
+    CreditcardTransactionResponse:
+      allOf:
+      - $ref: '#/components/schemas/TransactionResponse'
+      - type: object
+        required:
+        - paymentMethod
+        - cardId
+        properties:
+          paymentMethod:
+            type: string
+            enum: [CREDITCARD]
+          cardId:
+            type: string
+            format: uuid
+            example: "1d4c71e6-9b7f-472a-925d-54b82f5d3d32"
+          numberOfInstallments:
+            type: integer
+            format: int32
+            description: "Número de parcelas que será divido o valor da transação referente ao cartão de crédito. Este valor deve ser maior que 0 (zero), porém se não for informado o valor default é 1"
+            default: 1
+    AmeCashTransactionResponse:
+      allOf:
+      - $ref: '#/components/schemas/TransactionResponse'
+      - type: object
+        required:
+        - paymentMethod
+        properties:
+          paymentMethod:
+            type: string
+            enum: [AME_CASH]
+
+    OrderResponse:
+      type: object
+      required:
+      - id
+      - type
+      - status
+      - title
+      - amountInCents
+      - transactions
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "bb84ee76-95da-4ebe-a944-263a2a0343dc"
+          description: Identificador único da ordem
+        type:
+          type: string
+          example: PURCHASE
+          enum:
+          - PURCHASE
+          - CASH_IN
+          - TRANSFER_BETWEEN_WALLETS
+        status:
+          type: string
+          enum:
+          - CREATED
+          - AUTHORIZED
+          - CAPTURED
+          - CANCELLED
+        action:
+          type: string
+          description: "Representa a ação realizada que resultou no status atual da ordem"
+          enum:
+          - CREATE
+          - AUTHORIZE
+          - CAPTURE
+          - CANCEL
+          - SYS_CANCEL
+        title:
+          type: string
+          example: 'Deposito com cartão de crédito'
+          description: Título da ordem
+        description:
+          type: string
+          example: 'Deposito realizado para comprar utilizando saldo da carteira.'
+          description: 'Descrição da ordem'
+        amountInCents:
+          type: integer
+          format: int64
+          example: 157990
+          minimum: 1
+          description: Valor total da ordem em centavos, onde o `amount` deve ser maior que zero.
+        transactionType:
+          type: string
+        paymentMethods:
+          type: array
+          description: "Meios de pagamento que foram utilizados para executar a ordem."
+          items:
+            type: string
+            enum:
+            - CREDITCARD
+            - AME_CASH
+        transactions:
+          type: array
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/CreditcardTransactionResponse'
+            - $ref: '#/components/schemas/AmeCashTransactionResponse'
+            discriminator:
+              propertyName: type
+
+        createdAt:
+          type: string
+          format: date-time
+          description: Data e hora da criação da ordem no padrão `yyyy-MM-ddTHH:mm:ss Z`
+          example: '2018-08-17T13:22:41.SSS -03:00'
+        updatedAt:
+          type: string
+          format: date-time
+          description: Data e hora da última da ordem no padrão `yyyy-MM-ddTHH:mm:ss Z`
+          example: '2018-08-27T13:22:41.SSS -03:00'
+
+    CreditCard:
+      type: object
+      required:
+      - id
+      - holder
+      - maskedNumber
+      - brand
+      - expDate
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identificador único do cartão, se o mesmo cartão de crédito for inserido sempre gerará um novo valor.
+          example: 'f030bca2-bff3-4531-a8c0-a33f676022d6'
+          readOnly: true
+        token:
+          type: string
+          description: "Token do cartão referente ao Vault API"
+          example: "FACBC3F7169FE6F648AFA02786595155AC0A1A0DA0A55003E30AEE8D2365D11B"
+        hash:
+          type: string
+          description: "É gerado um id baseado nos dados do cartão crédito, um mesmo cartão sermpre gerará o mesmo valor."
+          example: "FACBC3F7169FE6F648AFA02786595155AC0A1A0DA0A55003E30AEE8D2365D11B"
+        holder:
+          type: string
+          example: "JOSE E MORANGO"
+          description: Nome conforme escrito no cartão.
+        maskedNumber:
+          type: string
+          example: "123456######7890"
+          description: número mascarado do cartão.
+        brand:
+          type: string
+          description: "Bandeira do cartão"
+          enum:
+          - VISA
+          - MASTERCARD
+          - AMEX
+          - ELO
+          - AURA
+          - DISCOVER
+          - JCB
+          - CABAL
+          - HIPERCARD
+          - DINERS
+          example: VISA
+        expDate:
+          type: string
+          description: "data de vencimento do cartão no formato mm/yyyy"
+          example: "07/2021"
+        main:
+          type: boolean
+          default: true
+          description: indica se é o cartão principal do cliente, onde somente pode existir um cartão principal por wallet.
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Data e hora da criação do cartão de crédito no padrão `yyyy-MM-ddTHH:mm:ss Z`
+          example: '2018-08-17T13:22:41.SSS -03:00'
+        updatedAt:
+          type: string
+          format: date-time
+          description: Data e hora da última atualização do cartão de crédito no padrão `yyyy-MM-ddTHH:mm:ss Z`
+          example: '2018-08-27T13:22:41.SSS -03:00'
+
+
+
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: https://api.dev.amedigital.com/auth/v1/platforms/ame/oauth/token
+          scopes:
+            read: Concede acesso de leitura
+            write: Concede acesso de escrita
+        clientCredentials:
+          tokenUrl: https://api.dev.amedigital.com/auth/v1/platforms/ame/oauth/token
+          scopes:
+            read: Concede acesso de leitura
+            write: Concede acesso de escrita
+
+
+
+
+

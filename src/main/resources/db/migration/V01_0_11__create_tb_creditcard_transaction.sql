@@ -1,0 +1,38 @@
+CREATE TABLE IF NOT EXISTS tb_creditcard_transaction (
+    id BIGINT (30) PRIMARY KEY AUTO_INCREMENT,
+    transaction_id BIGINT (30) NOT NULL,
+    credit_card_id VARCHAR(255) NOT NULL,
+    credit_card_status ENUM('AUTHORIZED', 'LOCKED', 'NEW_PAYMENT', 'CREATED', 'CAPTURED', 'CANCELLED', 'CAPTURED_WITH_REFUND', 'REFUNDED', 'UNAUTHORIZED', 'ERROR_TO_AUTHORIZE', 'UNEXPECTED_ERROR', 'ACQUIRER_UNAVAILABLE_ERROR', 'ERROR_TO_CAPTURE', 'CANCELLATION_REFUSED', 'CANCELLATION_ERROR', 'CANCELLATION_PENDING') NOT NULL,
+    gateway_order_reference VARCHAR(255) NOT NULL,
+    gateway_payment_reference VARCHAR(255) NOT NULL,
+    acquirer VARCHAR(255),
+    tid VARCHAR(255),
+    nsu VARCHAR(255),
+    authorization_nsu VARCHAR(255),
+    capture_nsu VARCHAR(255),
+    cancel_nsu VARCHAR(255),
+    number_of_installments INT,
+    installment_type VARCHAR(255),
+    authorization_code VARCHAR(255),
+    authorization_tid VARCHAR(255),
+    capture_tid VARCHAR(255),
+    cancel_tid VARCHAR(255),
+    holder_name VARCHAR(255),
+    masked_number VARCHAR(255),
+    brand VARCHAR(255),
+    expiration_month INT,
+    expiration_year INT,
+    currency VARCHAR(255) NOT NULL DEFAULT 'BRL',
+    authorization_date TIMESTAMP,
+    capture_date TIMESTAMP,
+    cancel_date TIMESTAMP,
+    refund_date TIMESTAMP,
+    gateway_cancellation_reference VARCHAR(255),
+    gateway_response_message VARCHAR(255),
+    gateway_response_code VARCHAR(255),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE tb_creditcard_transaction ADD FOREIGN KEY fk_transaction (transaction_id) REFERENCES tb_transaction (id);

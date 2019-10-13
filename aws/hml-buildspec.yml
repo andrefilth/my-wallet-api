@@ -1,0 +1,82 @@
+version: 0.2
+
+env:
+  variables:
+    GIT_REPO: "https://github.com/AmeDigital/ame-wallet-api.git"
+    BRANCH_NAME: "master"
+    IMAGE_REPO_NAME: "ame-wallet"
+    GIT_USER: "gitconfigsrv"
+    GIT_PASS: "aWqn10Pvv"
+    AWS_ACCOUNT_ID: "355315421281"
+    CONTAINER_NAME: "ame-hml-wallet-v2"
+    BASE_DIRECTORY: "ame-wallet-api"
+
+phases:
+  install:
+    commands:
+    
+      #- wget https://download.java.net/java/GA/jdk11/13/GPL/openjdk-11.0.1_linux-x64_bin.tar.gz
+      #- mkdir /opt/java
+      #- tar -xvf openjdk-11.0.1_linux-x64_bin.tar.gz -C /opt/java
+      #- export JAVA_HOME=/opt/java/jdk-11.0.1 
+      #- export PATH=$PATH:$JAVA_HOME/bin
+    
+      #- apt-get update -y && apt-get install -y git
+      
+      # Start daemon docker Thread
+      - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay&
+      - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
+      
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - $(aws ecr get-login --no-include-email)
+      
+      # Storing Git credentials in .netrc file in order to be able to login in git     
+      - echo "machine github.com" >> ~/.netrc
+      - echo "login $GIT_USER" >> ~/.netrc    
+      - echo "password $GIT_PASS" >> ~/.netrc
+              
+      # Clone the branch       
+      #- rm -r ame-wallet-api        
+      - git clone -b $BRANCH_NAME $GIT_REPO       
+      - cd $BASE_DIRECTORY
+        
+  build:
+    commands:
+
+      - ./gradlew clean build
+      - JAR_FILE_NAME="$(find build/libs -type f -name 'ame-*.jar')"
+      - cp $JAR_FILE_NAME 'build/libs/app.jar'
+      
+      - ./gradlew sonarqube #--info
+      
+      # Use Nebula Plugin to generate a new patch tag on github       
+      - ./gradlew candidate -Prelease.scope=patch -Dorg.ajoberstar.grgit.auth.username="$GIT_USER" -Dorg.ajoberstar.grgit.auth.password="$GIT_PASS"
+      
+      # Fetch the current tags related to the current branch       
+      - git fetch --tags        
+      # Get the last tag created    
+      - IMAGE_TAG="$(git describe --abbrev=0 --tags)"     
+      - IMAGE_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG"     
+      - IMAGE_URI_LATEST="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest_homolog"     
+      
+      - CODE_BUILD_JDK_COPY="jdk-11"
+      - cp -R $JAVA_HOME $CODE_BUILD_JDK_COPY
+      
+      - echo Building the Docker image... 
+      - docker build --no-cache -t $IMAGE_REPO_NAME:$IMAGE_TAG . --build-arg CODE_BUILD_JDK=$CODE_BUILD_JDK_COPY
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $IMAGE_URI
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $IMAGE_URI_LATEST
+      
+      - docker push "$IMAGE_URI"
+      - docker push "$IMAGE_URI_LATEST"
+      - echo [{\"name\":\"$CONTAINER_NAME\"\,\"imageUri\":\"$IMAGE_URI\"}]  >> images.json
+      
+  post_build:
+    commands:
+      - echo Build completed on `date`
+artifacts:
+  files:
+    - '**/*'
+  base-directory: $BASE_DIRECTORY

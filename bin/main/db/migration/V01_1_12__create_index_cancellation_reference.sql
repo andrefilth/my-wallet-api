@@ -1,0 +1,1 @@
+CREATE INDEX idx_creditcard_transaction_gateway_cancellation_reference ON tb_creditcard_transaction (gateway_cancellation_reference);

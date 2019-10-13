@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: wallet
+  cloud:
+    config:
+      uri: https://cfg.hml.amedigital.com/config-server
+
+---
+spring:
+  profiles: production
+  cloud:
+    config:
+      uri: https://cfg.amedigital.com/config-server

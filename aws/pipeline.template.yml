@@ -1,0 +1,107 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Pipeline for ECS Fargate
+Parameters:
+  RepoToken:
+    Type: String
+    NoEcho: true
+    Default: "43553c6c30d05356af6a0ba481a5641dac66fb11"
+    Description: OAuth Token for the github repository
+  BranchName:
+    Type: String
+    Default: "develop"
+    Description: Branch used by the pipeline
+  ClusterName:
+    Type: String
+    Default: "ame-dev-test-cicd"
+    Description: Cluster to deploy the application
+  ServiceName:
+    Type: String
+    Default: "ame-dev-srv-cicd-test"
+    Description: Service to deploy the docker image
+  CodePipelineName:
+    Type: String
+    Default: "ame-wallet-dev-test"
+    Description: Name of the Codepipeline
+    
+
+Resources:
+
+  BuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      ServiceRole: 'arn:aws:iam::355315421281:role/codebuild-ame-wallet-develop-service-role'
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: 'hml-buildspec.yml'
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/docker:17.09.0
+        EnvironmentVariables:
+          - Name: BRANCH_NAME
+            Value: !Ref BranchName
+      Artifacts:
+        Type: CODEPIPELINE
+  
+CodePipeline:
+  Type: AWS::CodePipeline::Pipeline
+  DependsOn:
+    - BuildProject
+  roleArn: arn:aws:iam::355315421281:role/AWS-CodePipeline-Service
+  stages:
+  - name: Source
+    actions:
+    - inputArtifacts: []
+      name: Source
+      actionTypeId:
+        category: Source
+        owner: ThirdParty
+        version: '1'
+        provider: GitHub
+      outputArtifacts:
+      - name: SourceArtifact
+      configuration:
+        Owner: "AmeDigital"
+        Repo: "ame-wallet-api"
+        PollForSourceChanges: 'false'
+        Branch: "develop"
+        OAuthToken: !Ref RepoToken
+      runOrder: 1
+  - name: Build
+    actions:
+    - inputArtifacts:
+      - name: SourceArtifact
+      name: Build
+      actionTypeId:
+        category: Build
+        owner: AWS
+        version: '1'
+        provider: CodeBuild
+      outputArtifacts:
+      - name: BuildArtifact
+      configuration:
+        #ProjectName: !Ref BuildProject
+        ProjectName: 'ame-wallet-v2-develop'
+      runOrder: 1
+  - name: Deploy
+    actions:
+    - inputArtifacts:
+      - name: BuildArtifact
+      name: Deploy
+      actionTypeId:
+        category: Deploy
+        owner: AWS
+        version: '1'
+        provider: ECS
+      outputArtifacts: []
+      configuration:
+        # CodePipeline -> ECS integration will only update the image attribute of the containerDefinitions, keeping all env variables
+        ClusterName: !Ref ClusterName
+        ServiceName: !Ref ServiceName
+        FileName: 'images.json'
+      runOrder: 1
+  artifactStore:
+    type: S3
+    location: codepipeline-us-east-1-909693802484
+  name: !Ref CodePipelineName
+  version: 1

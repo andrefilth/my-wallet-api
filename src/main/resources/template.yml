@@ -1,0 +1,42 @@
+- key: wallet
+  title: Wallet
+  description: >
+    Logs da Wallet
+  fields:
+    - name: "@timestamp"
+      type: date
+      required: true
+      format: date
+      example: August 26th 2016, 12:35:53.332
+      description: >
+        Data do log.
+
+    - name: "@version"
+      type: integer
+      description: >
+        Versão.
+
+    - name: message
+      type: text
+      description: >
+        Mensagem.
+
+    - name: logger_name
+      type: keyword
+      description: >
+        Logger name.
+
+    - name: thread_name
+      type: keyword
+      description: >
+        thread name
+
+    - name: level
+      type: keyword
+      description: >
+        level
+
+    - name: level_value
+      type: keyword
+      description: >
+        level
